@@ -31,6 +31,7 @@ for (const file of [
   path.join(root, 'bench', 'plan.mjs'),
   path.join(root, 'bench', 'run.mjs'),
   path.join(root, 'bench', 'report.mjs'),
+  path.join(root, 'e2e', 'fake-llm', 'index.js'),
 ]) {
   try {
     await import(pathToFileURL(file).href)

@@ -44,7 +44,8 @@
     "bench:plan": "node bench/plan.mjs",
     "bench:run": "node bench/run.mjs",
     "bench:report": "node bench/report.mjs",
-    "check": "npm run lint && npm test"
+    "check": "npm run lint && npm test",
+    "e2e": "node e2e/verify.mjs"
   },
   "engines": {
     "node": ">=22",

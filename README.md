@@ -2,7 +2,7 @@
 
 > 给 DeepSeek Harness 的 agent 循环装一块压力表：先看见浪费，再决定要不要踩刹车。
 
-**状态：v0.1.0，Host 半已实现并通过测试；Client 面板已在真实浏览器验收（中文浅色/深色、英文浅色）。** 尚未发布 npm。详见 [实现状态](./docs/implementation-status.md)。
+**状态：v0.1.0，Host 半已实现并通过测试；真实 DSH 回合已用离线脚本化 provider 验证（回执、coach 提醒、enforce 拒绝）；Client 面板已在真实浏览器验收（中文浅色/深色、英文浅色、520px 窄屏）。** 尚未发布 npm。详见 [实现状态](./docs/implementation-status.md)。
 
 | 文档 | 内容 |
 |---|---|
@@ -132,6 +132,7 @@ logs/actions.jsonl                   # 模式/预算/静音/清理审计
 - **`enforce` 是工具刹车，不是零超支保证**：token 用量在响应后才可知，回执会显示超支量，最终回答仍会计费。
 - 面板是 root 作用域，无法自动知道“当前会话”；默认展示最近活动会话，可在下拉框切换。
 - 插件在会话中途加载时，该轮标 `partial`，token 增量与历史峰值不猜测。
+- 真实 DSH 管线已用离线脚本化 provider 验证；真实模型的质量与收益仍需按 [基准预注册](./docs/benchmark.md) 跑对照。
 - 真实浏览器渲染已验收面板与回执抽屉；窄屏 520px 无横向溢出；Tab 可达主要控件与轮次行，但抽屉没有焦点陷阱。
 
 ## 开发
@@ -142,6 +143,9 @@ npm run lint    # 语法 + 隐私/零网络/零模型策略检查
 npm run check   # lint + test
 npm run demo    # 离线合成会话 → 回执 → 导出
 npm run bench   # fold / 写入微基准
+
+# 离线真实回合（需要已安装 DSH；不消耗模型额度）
+npm run e2e
 
 # M4 基准（预注册；真正执行会消耗模型额度）
 npm run bench:plan                 # 9 任务矩阵与 profile 准备说明

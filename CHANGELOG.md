@@ -30,6 +30,7 @@ First implementation of the v0.1 design.
 ### Added after the first pass
 
 - Contract/replay fixtures (`test/fixtures/*.json`) proving counters match logged events and no body text leaks.
+- Offline end-to-end verification (`npm run e2e`): a scripted LLM adapter drives a real DSH headless turn — three failing tool calls, a coach notice, and an enforce denial with `denied=1` in the receipt. No model account or token spend.
 - Pre-registered 9-task, 4-group benchmark plan (`docs/benchmark.md`, `bench/`), with a session-log metrics reader, dry-run-by-default runner, and honest report aggregation.
 - UI fixes from the browser pass: stored-receipt budget reads `sessionLimit`, shorter cache hint, single privacy row, translated pressure source, compact clock in the turn table, default selection prefers a session with receipts, Escape closes the drawer.
 - Narrow-viewport (520px) check: no horizontal page overflow, table scrolls inside its card; Tab reaches the main controls and turn rows.

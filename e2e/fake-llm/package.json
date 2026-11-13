@@ -1,0 +1,13 @@
+{
+  "name": "dsh-fake-llm",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Offline scripted LLM adapter used by e2e/verify.mjs. Test only; never published.",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js"
+  ]
+}

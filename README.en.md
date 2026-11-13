@@ -73,10 +73,11 @@ DeepSeek Harness `>=0.2.2-rc.3 <0.3.0`, Node ≥ 22, zero runtime dependencies. 
 - `enforce` is a **tool brake**, not a zero-overspend guarantee: usage is known only after a response, so the final answer is still billed.
 - The panel is root-scoped and cannot bind the current conversation; it defaults to the most recently active session and offers a selector.
 - A plugin loaded mid-turn marks that receipt `partial` and never invents history.
+- The real DSH pipeline is verified with an offline scripted provider; real-model quality and savings still need the pre-registered benchmark.
 - Real-browser rendering of the panel and receipt drawer is verified; a 520px viewport has no horizontal page overflow; Tab reaches the main controls and turn rows, but the drawer has no focus trap.
 
 ## Development
 
-`npm test` (65 tests), `npm run lint` (syntax + zero-dependency/zero-network policy), `npm run demo`, `npm run bench` (micro), and the pre-registered `npm run bench:plan` / `bench:run` / `bench:report` harness.
+`npm test` (65 tests), `npm run lint` (syntax + zero-dependency/zero-network policy), `npm run demo`, `npm run bench` (micro), `npm run e2e` (real offline DSH turn with a scripted provider), and the pre-registered `npm run bench:plan` / `bench:run` / `bench:report` harness.
 
 MIT. Not an official DeepSeek project; no affiliation or endorsement.

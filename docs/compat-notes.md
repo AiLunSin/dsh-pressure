@@ -121,11 +121,12 @@
 | 拉取 Client bundle | `200`，35 KB，含 `__ModuleLoader__` 与包 id |
 | 卸载插件后重启 | `/api/dsh-pressure/health` 返回 `404`，无残留路由/日志 |
 | 真实浏览器渲染面板 | **已验证**：headless Edge + CDP，中文浅色/深色与英文浅色；侧边栏入口、KPI、信号、轮次表、About、回执抽屉、Esc 关闭均正常 |
+| 离线真实 DSH 回合（`npm run e2e`） | **已验证**：脚本化 provider 触发 3 次失败工具调用；coach 追加 1 条 notice 并写回执；enforce 第 3 次调用被 `budget_exhausted` 拒绝，回执 `denied=1` |
 
 ## 4. 未验证 / 留到后续
 
-- 真实模型轮次下的端到端回执与 `enforce` 拒绝：临时 profile 无模型凭据；逻辑由合成事件测试覆盖（`test/service.test.js`），事件名与字段来自本文件 §1.1。
-- `/squeeze` 命令在真实命令面板中的渲染：注册形态与官方 `/compact` 一致，命令解析有单测；未在真实 GUI 手工执行。
+- 真实模型质量/收益：脚本化 provider 已跑通真实 DSH 管线（见 §3），但真实模型的回执数值与 M4 基准尚未执行。
+- `/squeeze` 命令在真实命令面板中的渲染：注册形态与官方 `/compact` 一致，命令解析与行为有单测；未在真实 GUI 手工执行。
 - `agent.ctx.tools.guard` 的 agent 级绑定（已改用全局 guard，见 D-6）。
 - 键盘：Tab 可达会话选择、刷新、导出链接与轮次行，Esc 关闭抽屉；抽屉未做焦点陷阱，未做屏幕阅读器测试。窄屏 520px 无横向页面溢出，表格在自身容器内滚动。
 - Windows 文件权限：只做 best-effort，不宣称 0600 已生效。

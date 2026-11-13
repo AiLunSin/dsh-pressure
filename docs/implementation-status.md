@@ -2,15 +2,15 @@
 
 > 配套文档：[需求单](./requirements.zh-CN.md) · [技术方案](./technical-design.zh-CN.md) · [兼容性勘察](./compat-notes.md)
 
-**一句话**：Host 半已实现并通过 65 项自动化测试与临时 profile 冒烟；Client 面板已在真实浏览器（headless Edge + CDP）完成面板、抽屉与 Esc 的渲染验收，覆盖中文浅色/深色与英文浅色；M4 已预注册并提供可运行 harness，尚未消耗模型额度跑对照。
+**一句话**：Host 半已实现并通过 65 项自动化测试与临时 profile 冒烟；Client 面板已在真实浏览器（headless Edge + CDP）完成面板、抽屉与 Esc 的渲染验收，覆盖中文浅色/深色、英文浅色与 520px 窄屏；另外用**离线脚本化 provider** 跑通了真实 DSH 回合，验证了回执、coach 提醒与 enforce 拒绝（不消耗模型额度）。M4 已预注册并提供可运行 harness，尚未跑真实模型对照。
 
 ## 里程碑
 
 | 阶段 | 状态 | 证据 |
 |---|---|---|
 | **M0 API 勘察** | ✅ 完成 | [compat-notes](./compat-notes.md) §1：事件、投影、guard、post-execute、命令、Web 路由、Client slot 均有运行时/源码依据 |
-| **M1 观察闭环** | ✅ 基本完成 | 事件 fold、回执生成、JSONL 存储、只读 API、幂等/保留/导出测试；临时 profile 中 `/health`、`/sessions` 返回 200 |
-| **M2 诊断与阀门** | ✅ 逻辑完成 | 6 类信号 + `budget_exhausted`、coach 限频/静音、enforce 守卫、预算状态机、`/squeeze` 全命令族、审计日志；单测覆盖 |
+| **M1 观察闭环** | ✅ 完成 | 事件 fold、回执生成、JSONL 存储、只读 API、幂等/保留/导出测试；临时 profile 中 `/health`、`/sessions` 返回 200；离线 e2e 真实回合写出回执 |
+| **M2 诊断与阀门** | ✅ 完成 | 6 类信号 + `budget_exhausted`、coach 限频/静音、enforce 守卫、预算状态机、`/squeeze` 全命令族、审计日志；离线 e2e 验证 coach 提醒与 enforce 拒绝 |
 | **M3 面板与发布** | ✅ 面板完成 | 面板、双语文案、图标、DETAIL、CI 脚本已就绪；真实浏览器验收通过；**未发布 npm** |
 | **M4 基准与稳定** | ⚠️ 预注册完成 | 9 个任务、四组、指标与停止条件见 [benchmark.md](./benchmark.md)；`bench/run.mjs` 可运行但默认 dry-run；真实模型对照尚未执行 |
 
@@ -22,6 +22,7 @@ npm run lint        check-syntax ok（13 个 Host 模块 + 5 个 bench 模块 + 
 npm run demo        2 张回执 → Markdown/JSON/CSV，flags: context_pressure, failure_streak, bloated_result, repeat_calls
 npm run bench       fold p95 0.003 ms（目标 ≤2 ms）；写入 p95 ≈1.0 ms（目标 ≤10 ms）
 npm run bench:plan  9 任务 × 4 组 × 3 次；9 个任务原始状态均验收失败（防自带答案）
+npm run e2e         离线真实 DSH 回合：coach 回执 + 1 条提醒；enforce 第 3 次调用被拒、回执 denied=1
 ```
 
 临时 profile 集成（不触碰用户 `desktop` profile）：
@@ -41,8 +42,18 @@ npm run bench:plan  9 任务 × 4 组 × 3 次；9 个任务原始状态均验�
 | 语言 | 中文、英文完整切换；无硬编码残留 |
 | 回执抽屉 | 点击轮次行打开；Esc 关闭；导出/复制按钮可见 |
 | 默认选中 | 优先有回执的会话；新开空会话不再把 KPI 覆盖成 0 |
+| 窄屏 | 520px 无横向页面溢出；表格在卡片内滚动 |
+| 键盘 | Tab 可达会话选择、刷新、导出链接与轮次行；抽屉无焦点陷阱 |
 
-截图（不随仓库提交，避免个人路径）：`.tmp/panel5.png`、`.tmp/drawer3.png`、`.tmp/panel-dark.png`、`.tmp/panel-en.png`。
+截图（不随仓库提交，避免个人路径）：`.tmp/panel5.png`、`.tmp/drawer3.png`、`.tmp/panel-dark.png`、`.tmp/panel-en.png`、`.tmp/panel-narrow.png`。
+
+离线真实回合（`npm run e2e`，脚本化 provider，不消耗额度）：
+
+| 检查 | 结果 |
+|---|---|
+| coach 回合 | 3 次工具调用 / 3 次失败；1 条 `source.kind=dsh-pressure` 的 notice；回执 `mode=coach`、`failure_streak:3`、`advice.inspectLastError` |
+| enforce 回合 | 第 3 次工具调用被 guard 拒绝（`code=budget_exhausted`, `name=pressure`）；回执 `denied=1`、`budget_exhausted`、`advice.toolsStopped` |
+| 隐私 | 回执 JSON 不含工具参数 `missing-`；日志只读元数据 |
 
 ## 偏差与已知限制
 
