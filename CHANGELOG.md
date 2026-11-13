@@ -22,7 +22,7 @@ First implementation of the v0.1 design.
 
 ### Verification
 
-- 65 automated tests (fold, flags, budget, receipts, HTTP, service, client bundle, replay fixtures, benchmark tooling, smoke).
+- 66 automated tests (fold, flags, budget, receipts, HTTP, service, client bundle, replay fixtures, benchmark tooling, smoke).
 - Temporary-profile integration: plugin activates, `/health` and `/sessions` respond, client bundle injected, uninstall leaves a 404 route with no residue.
 - Real browser (headless Edge + CDP): panel, receipt drawer, Escape close; Chinese light/dark and English light.
 - Bench: fold p95 0.003 ms, receipt write p95 ≈1 ms on this machine.
@@ -31,6 +31,8 @@ First implementation of the v0.1 design.
 
 - Contract/replay fixtures (`test/fixtures/*.json`) proving counters match logged events and no body text leaks.
 - Offline end-to-end verification (`npm run e2e`): a scripted LLM adapter drives a real DSH headless turn — three failing tool calls, a coach notice, and an enforce denial with `denied=1` in the receipt. No model account or token spend.
+- Benchmark cost guard: `--max-tokens` and `--max-cny` stop the matrix after the run that crosses the cap; `bench/pricing.mjs` quotes DeepSeek Flash off-peak/peak list prices.
+- A 108-run real-model budget smoke (¥0.5927, 105/108 acceptance passes): see `docs/smoke-2026-11-13.md`. It found no coach triggers, no token savings, and an 11.1-point success drop for a 6-call enforce brake, so observe stays the default.
 - Pre-registered 9-task, 4-group benchmark plan (`docs/benchmark.md`, `bench/`), with a session-log metrics reader, dry-run-by-default runner, and honest report aggregation.
 - UI fixes from the browser pass: stored-receipt budget reads `sessionLimit`, shorter cache hint, single privacy row, translated pressure source, compact clock in the turn table, default selection prefers a session with receipts, Escape closes the drawer.
 - Narrow-viewport (520px) check: no horizontal page overflow, table scrolls inside its card; Tab reaches the main controls and turn rows.

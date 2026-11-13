@@ -7,6 +7,7 @@ import test from 'node:test'
 import { aggregate, renderMarkdown } from '../bench/report.mjs'
 import { metricsFromEvents } from '../bench/metrics.mjs'
 import { GROUPS, materializeAll } from '../bench/plan.mjs'
+import { isPeak, quoteCny } from '../bench/pricing.mjs'
 import { materialize, TASKS, verify } from '../bench/tasks.mjs'
 
 test('the pre-registered set has nine tasks, three per category', () => {
@@ -87,6 +88,18 @@ test('session metrics count usage, tools, failures, compactions, and wall time',
   assert.equal(metrics.tokens.cacheHitRate, 0.32967)
   assert.equal(metrics.wallMs, 500)
   assert.equal(JSON.stringify(metrics).includes('read'), false)
+})
+
+test('pricing uses off-peak and peak DeepSeek Flash list prices', () => {
+  const tokens = { input: 1_000_000, cacheRead: 1_000_000, cacheWrite: 0, output: 1_000_000 }
+  // 2026-11-14T04:00:00Z = Saturday 12:00 Beijing (off-peak).
+  assert.equal(isPeak(new Date('2026-11-14T04:00:00Z')), false)
+  assert.equal(quoteCny(tokens, new Date('2026-11-14T04:00:00Z')), 5.02)
+  // 2026-11-13T02:00:00Z = Friday 10:00 Beijing (peak).
+  assert.equal(isPeak(new Date('2026-11-13T02:00:00Z')), true)
+  assert.equal(quoteCny(tokens, new Date('2026-11-13T02:00:00Z')), 10.04)
+  // Cache writes are conservatively priced as cache-miss input.
+  assert.equal(quoteCny({ cacheWrite: 1_000_000 }, new Date('2026-11-14T04:00:00Z')), 1)
 })
 
 test('report aggregation computes medians, deltas, and warnings honestly', () => {

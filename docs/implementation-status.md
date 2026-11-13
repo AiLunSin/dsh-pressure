@@ -2,7 +2,7 @@
 
 > 配套文档：[需求单](./requirements.zh-CN.md) · [技术方案](./technical-design.zh-CN.md) · [兼容性勘察](./compat-notes.md)
 
-**一句话**：Host 半已实现并通过 65 项自动化测试与临时 profile 冒烟；Client 面板已在真实浏览器（headless Edge + CDP）完成面板、抽屉与 Esc 的渲染验收，覆盖中文浅色/深色、英文浅色与 520px 窄屏；另外用**离线脚本化 provider** 跑通了真实 DSH 回合，验证了回执、coach 提醒与 enforce 拒绝（不消耗模型额度）。M4 已预注册并提供可运行 harness，尚未跑真实模型对照。
+**一句话**：Host 半已实现并通过 66 项自动化测试与临时 profile 冒烟；Client 面板已在真实浏览器（headless Edge + CDP）完成面板、抽屉与 Esc 的渲染验收，覆盖中文浅色/深色、英文浅色与 520px 窄屏；离线脚本化 provider 跑通了真实 DSH 回合；并用真实账号跑了 108 次、约 ¥0.59 的预算冒烟（105/108 通过）。结论是**没有证据支持 coach 收益，enforce 会伤害工具密集任务**，默认保持 observe。
 
 ## 里程碑
 
@@ -12,17 +12,18 @@
 | **M1 观察闭环** | ✅ 完成 | 事件 fold、回执生成、JSONL 存储、只读 API、幂等/保留/导出测试；临时 profile 中 `/health`、`/sessions` 返回 200；离线 e2e 真实回合写出回执 |
 | **M2 诊断与阀门** | ✅ 完成 | 6 类信号 + `budget_exhausted`、coach 限频/静音、enforce 守卫、预算状态机、`/squeeze` 全命令族、审计日志；离线 e2e 验证 coach 提醒与 enforce 拒绝 |
 | **M3 面板与发布** | ✅ 面板完成 | 面板、双语文案、图标、DETAIL、CI 脚本已就绪；真实浏览器验收通过；**未发布 npm** |
-| **M4 基准与稳定** | ⚠️ 预注册完成 | 9 个任务、四组、指标与停止条件见 [benchmark.md](./benchmark.md)；`bench/run.mjs` 可运行但默认 dry-run；真实模型对照尚未执行 |
+| **M4 基准与稳定** | ⚠️ 预算冒烟完成 | 108 次真实模型运行、105 通过、约 ¥0.59（[结果](./smoke-2026-11-13.md)）；D 组因单轮 token 预算无法轮内生效而改用 6 次工具上限，属于偏差；预注册的完整结论仍未完成 |
 
 ## 验证证据
 
 ```
-npm test            65 pass / 0 fail
+npm test            66 pass / 0 fail
 npm run lint        check-syntax ok（13 个 Host 模块 + 5 个 bench 模块 + client bundle + locale + fixtures）
 npm run demo        2 张回执 → Markdown/JSON/CSV，flags: context_pressure, failure_streak, bloated_result, repeat_calls
 npm run bench       fold p95 0.003 ms（目标 ≤2 ms）；写入 p95 ≈1.0 ms（目标 ≤10 ms）
 npm run bench:plan  9 任务 × 4 组 × 3 次；9 个任务原始状态均验收失败（防自带答案）
 npm run e2e         离线真实 DSH 回合：coach 回执 + 1 条提醒；enforce 第 3 次调用被拒、回执 denied=1
+npm run bench smoke 108 次真实运行：105/108 通过，4,283,828 tokens，约 ¥0.59（见 smoke-2026-11-13.md）
 ```
 
 临时 profile 集成（不触碰用户 `desktop` profile）：
@@ -68,7 +69,7 @@ npm run e2e         离线真实 DSH 回合：coach 回执 + 1 条提醒；enfor
 
 ## 下一步（建议顺序）
 
-1. 真实模型会话下手工验收：安装 → 跑一轮含工具失败的任务 → 回执 → `/squeeze status` → 导出。
-2. 窄屏（≤560px）与 Tab 键盘全流程验收。
-3. M4：按 [`benchmark.md`](./benchmark.md) 预注册 9 任务、四组对照，报告原始数据。
-4. 发布前：npm/GitHub 名称检索、`npm pack` 清单、CI（当前 + 前一 minor）。
+1. 真实模型下验证 coach：构造会触发 `failure_streak` / `context_pressure` 的任务或多轮会话；本次冒烟中 coach 一次都没有触发。
+2. 重新设计 D：单轮任务下 token 预算无法轮内生效；需要多轮任务，或把“工具刹车”与“token 预算”拆成两个独立实验。
+3. 窄屏（≤560px）与 Tab 键盘全流程逐项验收（目前覆盖 520px 与主要控件）。
+4. 发布前：npm/GitHub 名称检索已完成（`dsh-pressure` 可用）、`npm pack` 清单、CI（当前 + 前一 minor）。

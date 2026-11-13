@@ -2,7 +2,7 @@
 
 > 给 DeepSeek Harness 的 agent 循环装一块压力表：先看见浪费，再决定要不要踩刹车。
 
-**状态：v0.1.0，Host 半已实现并通过测试；真实 DSH 回合已用离线脚本化 provider 验证（回执、coach 提醒、enforce 拒绝）；Client 面板已在真实浏览器验收（中文浅色/深色、英文浅色、520px 窄屏）。** 尚未发布 npm。详见 [实现状态](./docs/implementation-status.md)。
+**状态：v0.1.0，已装入 desktop profile。** Host 半通过 66 项测试；真实 DSH 回合用离线脚本化 provider 验证；真实模型预算冒烟跑了 108 次（约 ¥0.59，105/108 通过），结论是 **coach 未被触发、enforce 伤害工具密集任务**，默认保持 observe。Client 面板已在真实浏览器验收（中文浅/深、英文、520px）。尚未发布 npm。详见 [实现状态](./docs/implementation-status.md) 与 [冒烟结果](./docs/smoke-2026-11-13.md)。
 
 | 文档 | 内容 |
 |---|---|
@@ -11,6 +11,8 @@
 | [兼容性勘察](./docs/compat-notes.md) | DSH `0.2.2-rc.3` 的实际接口、偏差 D-1…D-7、集成验证结果 |
 | [实现状态](./docs/implementation-status.md) | 里程碑完成度、验证证据、已知限制、下一步 |
 | [基准预注册](./docs/benchmark.md) | 9 个合成任务、四组对照、指标、停止条件与诚实报告规则 |
+| [发布清单](./docs/publishing.md) | npm 发布、tag、GitHub Release、发布后冒烟与回滚 |
+| [冒烟结果](./docs/smoke-2026-11-13.md) | 108 次真实模型运行、成本、干预次数与诚实结论 |
 
 ## 它是什么
 
@@ -138,7 +140,7 @@ logs/actions.jsonl                   # 模式/预算/静音/清理审计
 ## 开发
 
 ```bash
-npm test        # node:test，65 项
+npm test        # node:test，66 项
 npm run lint    # 语法 + 隐私/零网络/零模型策略检查
 npm run check   # lint + test
 npm run demo    # 离线合成会话 → 回执 → 导出

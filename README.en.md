@@ -2,7 +2,7 @@
 
 > A pressure gauge for DeepSeek Harness agent loops: see the waste first, then decide whether to brake.
 
-**Status: v0.1.0. The Host half is implemented and tested; the Web panel has been verified in a real browser (Chinese light/dark, English light).** Not published to npm yet. See [implementation status](./docs/implementation-status.md) (Chinese).
+**Status: v0.1.0, installed in the desktop profile.** The Host half passes 66 tests; a real DSH turn is verified with an offline scripted provider; a 108-run real-model budget smoke cost about ¥0.59 (105/108 passed) and found **no evidence for coach benefit while enforce hurt tool-heavy tasks**, so observe stays the default. The Web panel is verified in a real browser (Chinese light/dark, English, 520px). Not published to npm yet.
 
 ## What it is
 
@@ -78,6 +78,6 @@ DeepSeek Harness `>=0.2.2-rc.3 <0.3.0`, Node ≥ 22, zero runtime dependencies. 
 
 ## Development
 
-`npm test` (65 tests), `npm run lint` (syntax + zero-dependency/zero-network policy), `npm run demo`, `npm run bench` (micro), `npm run e2e` (real offline DSH turn with a scripted provider), and the pre-registered `npm run bench:plan` / `bench:run` / `bench:report` harness.
+`npm test` (66 tests), `npm run lint` (syntax + zero-dependency/zero-network policy), `npm run demo`, `npm run bench` (micro), `npm run e2e` (real offline DSH turn with a scripted provider), and the pre-registered `npm run bench:plan` / `bench:run` / `bench:report` harness.
 
 MIT. Not an official DeepSeek project; no affiliation or endorsement.

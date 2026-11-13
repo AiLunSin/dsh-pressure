@@ -46,6 +46,7 @@ export function aggregate(rows) {
     const tokens = groupRows.map((row) => row.metrics?.tokens?.total).filter((value) => typeof value === 'number')
     const tools = groupRows.map((row) => row.metrics?.toolCalls).filter((value) => typeof value === 'number')
     const wall = groupRows.map((row) => row.metrics?.wallMs).filter((value) => typeof value === 'number')
+    const cny = groupRows.map((row) => row.estimatedCny).filter((value) => typeof value === 'number')
     const passed = groupRows.filter((row) => row.passed).length
     groupStats[group] = {
       runs: groupRows.length,
@@ -53,6 +54,8 @@ export function aggregate(rows) {
       successRate: groupRows.length > 0 ? passed / groupRows.length : null,
       tokensMedian: median(tokens),
       tokensRange: range(tokens),
+      cnyMedian: median(cny),
+      cnyRange: range(cny),
       toolsMedian: median(tools),
       toolsRange: range(tools),
       wallMedian: median(wall),
@@ -134,13 +137,13 @@ export function renderMarkdown(summary, options) {
   lines.push('')
   lines.push('## Overall')
   lines.push('')
-  lines.push('| Group | Runs | Success | Median tokens (range) | Median tool calls | Median wall (range) |')
-  lines.push('|---|---|---|---|---|---|')
+  lines.push('| Group | Runs | Success | Median tokens (range) | Median est. CNY | Median tool calls | Median wall (range) |')
+  lines.push('|---|---|---|---|---|---|---|')
   for (const group of summary.groups) {
     const stats = summary.groupStats[group]
     const tokenRange = stats.tokensRange === null ? '—' : `${num(stats.tokensRange.min)}–${num(stats.tokensRange.max)}`
     const wallRange = stats.wallRange === null ? '—' : `${num(stats.wallRange.min)}–${num(stats.wallRange.max)} ms`
-    lines.push(`| ${group} | ${stats.runs} | ${pct(stats.successRate === null ? null : stats.successRate * 100)} | ${num(stats.tokensMedian)} (${tokenRange}) | ${num(stats.toolsMedian)} | ${num(stats.wallMedian)} (${wallRange}) |`)
+    lines.push(`| ${group} | ${stats.runs} | ${pct(stats.successRate === null ? null : stats.successRate * 100)} | ${num(stats.tokensMedian)} (${tokenRange}) | ${stats.cnyMedian === null ? '—' : `¥${stats.cnyMedian.toFixed(4)}`} | ${num(stats.toolsMedian)} | ${num(stats.wallMedian)} (${wallRange}) |`)
   }
   lines.push('')
   lines.push('## Change vs baseline A')
@@ -177,7 +180,7 @@ export function renderMarkdown(summary, options) {
  * @returns {string}
  */
 export function renderCsv(summary) {
-  const rows = ['group,runs,successRate,tokensMedian,tokensMin,tokensMax,toolsMedian,wallMedianMs']
+  const rows = ['group,runs,successRate,tokensMedian,tokensMin,tokensMax,cnyMedian,toolsMedian,wallMedianMs']
   for (const group of summary.groups) {
     const stats = summary.groupStats[group]
     rows.push([
@@ -187,6 +190,7 @@ export function renderCsv(summary) {
       stats.tokensMedian === null ? '' : stats.tokensMedian,
       stats.tokensRange?.min ?? '',
       stats.tokensRange?.max ?? '',
+      stats.cnyMedian === null ? '' : stats.cnyMedian,
       stats.toolsMedian === null ? '' : stats.toolsMedian,
       stats.wallMedian === null ? '' : stats.wallMedian,
     ].join(','))

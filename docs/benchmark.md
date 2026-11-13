@@ -1,6 +1,6 @@
 # 基准预注册（M4）
 
-> 状态：**已预注册，尚未执行**。执行需要模型凭据；本仓库不保存凭据，也不在 CI 中调用模型。
+> 状态：**已预注册，已跑一次 1 元预算冒烟**（[结果](./smoke-2026-11-13.md)：108 次、105 通过、约 ¥0.59）。预注册的完整结论仍未完成：D 组因单轮任务无法轮内结算 token 而改用工具调用上限，coach 在本次任务集上完全没有触发。
 > 预注册时间：2026-11-13。任务、分组、指标与停止条件在跑第一次之前固定；任何后改都必须在报告里注明。
 
 ## 研究问题
@@ -66,6 +66,11 @@ node bench/run.mjs --profiles A=headless,B=pressure-b,C=pressure-c,D=pressure-d 
 node bench/run.mjs --profiles A=headless,B=pressure-b,C=pressure-c,D=pressure-d \
   --dsh-home ~/.dsh --out bench/runs/2026-11-13 --execute
 
+# 4b) 预算冒烟：限制总 token，达到后停止并保留已跑行
+node bench/run.mjs --profiles A=pressure-smoke-a,B=pressure-smoke-b,C=pressure-smoke-c,D=pressure-smoke-d \
+  --dsh-home ~/.dsh --out bench/runs/smoke --execute \
+  --tasks bugfix-offbyone,feature-slug,investigate-constant --groups A,B,C,D --reps 1 --max-tokens 300000
+
 # 5) 生成报告
 node bench/report.mjs --results bench/runs/2026-11-13/results.jsonl
 ```
@@ -77,6 +82,12 @@ node bench/report.mjs --results bench/runs/2026-11-13/results.jsonl
 - 若 D 组成功率相对 A 下降超过 10 个百分点，报告必须写“**不推荐默认开启 enforce**”。
 - 若 B 组相对 A 的开销 > 3%，先优化再发布，不把开销当噪声。
 - 原始数据只含数字、稳定 code 与验收输出；**不发布** prompt 文本、工具参数/结果、Session 日志原文。
+
+## 执行中的预算与偏差
+
+- `bench/run.mjs` 支持 `--max-tokens` 与 `--max-cny` 硬上限：每跑完一行检查已用 token 与按 DeepSeek Flash 官方价估算的 CNY，达到上限即停止，报告会标记缺失行。
+- 单轮 headless 任务里，**会话/单轮 token 预算要到轮末才结算**，因此 `enforce` 无法在当轮按 token 刹停；唯一能在轮内生效的是 `turnToolCalls`。预算冒烟中 D 组因此使用 `turnToolCalls: 6`，这与预注册的“会话 token = 基线中位数 ×0.8”不同，报告必须注明。
+- 真实模型回合会写入真实 `$DSH_HOME/sessions` 与回执；基准只保存数字、稳定 code 与验收输出，不保存 prompt/工具正文。
 
 ## 已知限制
 

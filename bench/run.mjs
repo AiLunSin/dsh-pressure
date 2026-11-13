@@ -12,14 +12,14 @@
  */
 
 import { spawnSync } from 'node:child_process'
-import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import os from 'node:os'
+import { appendFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 import { ReceiptStore } from '../src/receipts.js'
 import { GROUPS } from './plan.mjs'
 import { findRunMetrics, findSessionLogs } from './metrics.mjs'
+import { quoteCny } from './pricing.mjs'
 import { materialize, taskById, TASKS, verify } from './tasks.mjs'
 
 /**
@@ -81,6 +81,14 @@ async function receiptSummary(store, sessionIds) {
 }
 
 /**
+ * Token buckets from a run's metrics, or zeros when the log was unavailable.
+ * @param {{ metrics: any } | null} found
+ */
+function tokensOf(found) {
+  return found?.metrics?.tokens ?? {}
+}
+
+/**
  * The Desktop build hides the CLI inside app.asar, which only Electron's
  * patched fs can read; plain Node works for npm/source installations.
  * @returns {string}
@@ -105,6 +113,8 @@ export async function main(argv) {
       cli: { type: 'string' },
       seed: { type: 'string', default: '20261113' },
       timeout: { type: 'string', default: '600000' },
+      'max-tokens': { type: 'string' },
+      'max-cny': { type: 'string' },
       execute: { type: 'boolean', default: false },
     },
   })
@@ -117,6 +127,12 @@ export async function main(argv) {
   const reps = Math.max(1, Number.parseInt(values.reps, 10) || 3)
   const seed = Number.parseInt(values.seed, 10) || 20261113
   const timeout = Math.max(30_000, Number.parseInt(values.timeout, 10) || 600_000)
+  const maxTokens = values['max-tokens'] === undefined
+    ? null
+    : Math.max(1, Number.parseInt(values['max-tokens'], 10) || 0)
+  const maxCny = values['max-cny'] === undefined
+    ? null
+    : Math.max(0.000001, Number.parseFloat(values['max-cny']) || 0)
   const profiles = parseProfiles(values.profiles ?? 'A=headless,B=pressure-b,C=pressure-c,D=pressure-d')
 
   if (groups.length === 0 || tasks.length === 0) {
@@ -146,7 +162,7 @@ export async function main(argv) {
     console.log('First commands:')
     for (const item of plan.slice(0, 3)) {
       console.log(`  ${nodeExecutable} "${cli}" --profile ${profiles[item.group.id]} "TASK PROMPT"`)
-      console.log(`    cwd=${path.join(values.out ?? '<out>', item.task.id, item.group.id + '-' + item.rep)}`)
+      console.log(`    cwd=${path.join(values.out ?? '<out>', 'workspace')}`)
     }
     return 0
   }
@@ -159,7 +175,8 @@ export async function main(argv) {
   const out = path.resolve(values.out)
   const cli = path.resolve(values.cli ?? path.join(process.env.DSH_INSTALL_DIR ?? '', 'lib', 'bin.js'))
   const nodeExecutable = resolveNodeExecutable()
-  if (!existsSync(cli)) {
+  // Plain Node cannot stat inside app.asar; the Electron runtime can.
+  if (!cli.includes('.asar') && !existsSync(cli)) {
     console.error(`CLI not found: ${cli} (pass --cli or set DSH_INSTALL_DIR)`)
     return 2
   }
@@ -193,11 +210,27 @@ export async function main(argv) {
   await store.open()
 
   console.log(`executing ${plan.length} runs into ${out}`)
+  if (maxTokens !== null) console.log(`token cap: ${maxTokens} (stops after the run that crosses it)`)
+  if (maxCny !== null) console.log(`CNY cap: ${maxCny} (DeepSeek Flash list price, off-peak/peak aware)`)
+  // One shared working directory keeps all benchmark Sessions under one
+  // workspace project instead of creating nine project folders in the user's
+  // DSH home. It is wiped before every run.
+  const workspace = path.join(out, 'workspace')
   let failures = 0
+  let spentTokens = 0
+  let spentCny = 0
+  let executed = 0
+  let stoppedByCap = false
   for (const [index, item] of plan.entries()) {
+    if ((maxTokens !== null && spentTokens >= maxTokens) || (maxCny !== null && spentCny >= maxCny)) {
+      stoppedByCap = true
+      console.log(`cap reached (tokens ${spentTokens}/${maxTokens ?? '—'}, CNY ${spentCny}/${maxCny ?? '—'}); stopping`)
+      break
+    }
     const label = `[${index + 1}/${plan.length}] ${item.group.id} ${item.task.id} rep${item.rep}`
     console.log(`${label} …`)
-    const workspace = path.join(out, 'workspaces', item.task.id, `${item.group.id}-${item.rep}`)
+    rmSync(workspace, { recursive: true, force: true })
+    mkdirSync(workspace, { recursive: true })
     materialize(item.task, workspace)
     const startedAt = Date.now()
     const run = spawnSync(nodeExecutable, [cli, '--profile', profiles[item.group.id], item.task.prompt], {
@@ -222,6 +255,7 @@ export async function main(argv) {
     const receipts = item.group.plugin && metrics !== null
       ? await receiptSummary(store, [metrics.metrics.sessionId].filter(Boolean))
       : null
+    const estimatedCny = quoteCny(tokensOf(metrics), new Date())
     const row = {
       at: new Date().toISOString(),
       group: item.group.id,
@@ -232,23 +266,34 @@ export async function main(argv) {
       exitCode: run.status,
       timedOut: run.error?.code === 'ETIMEDOUT' || run.signal === 'SIGTERM',
       durationMs,
+      estimatedCny,
       passed: acceptance.passed,
       acceptance: acceptance.output.slice(-2000),
       metrics: metrics?.metrics ?? null,
       receipts,
     }
     appendFileSync(resultsFile, `${JSON.stringify(row)}\n`)
-    console.log(`   ${acceptance.passed ? 'PASS' : 'FAIL'} · ${durationMs} ms · tokens=${row.metrics?.tokens.total ?? 'n/a'} tools=${row.metrics?.toolCalls ?? 'n/a'}`)
+    spentTokens += row.metrics?.tokens?.total ?? 0
+    spentCny += estimatedCny
+    executed += 1
+    console.log(`   ${acceptance.passed ? 'PASS' : 'FAIL'} · ${durationMs} ms · tokens=${row.metrics?.tokens?.total ?? 'n/a'} tools=${row.metrics?.toolCalls ?? 'n/a'} · spent=${spentTokens} tok / ¥${spentCny.toFixed(4)}`)
   }
   await store.close()
   writeFileSync(path.join(out, 'done.json'), `${JSON.stringify({
     finishedAt: new Date().toISOString(),
-    runs: plan.length,
+    planned: plan.length,
+    runs: executed,
     failedRuns: failures,
+    spentTokens,
+    maxTokens,
+    spentCny,
+    maxCny,
+    stoppedByCap,
     resultsFile,
   }, null, 2)}\n`)
   console.log('')
-  console.log(`done: ${plan.length - failures}/${plan.length} acceptance passes; results=${resultsFile}`)
+  console.log(`done: ${executed - failures}/${executed} acceptance passes; tokens=${spentTokens}; est=¥${spentCny.toFixed(4)}; results=${resultsFile}`)
+  if (stoppedByCap) console.log('note: the token cap stopped the matrix early; the report will mark the missing rows.')
   console.log('Next: node bench/report.mjs --results ' + resultsFile + ' --out ' + out)
   return 0
 }
