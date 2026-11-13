@@ -24,6 +24,9 @@ const BUDGET_DIMENSIONS = Object.freeze({
 export function createSqueezeCommand(options) {
   const { service, store, locale } = options
   const t = translator(locale)
+  const numberFormat = new Intl.NumberFormat(locale === 'zh' ? 'zh-CN' : 'en-US')
+  /** @param {number} value */
+  const fmt = (value) => numberFormat.format(value)
 
   return {
     name: 'squeeze',
@@ -65,14 +68,14 @@ export function createSqueezeCommand(options) {
       kind: 'success',
       text: t('command.status', {
         mode: binding.mode,
-        sessionSpent: budgetState.sessionSpent,
+        sessionSpent: fmt(budgetState.sessionSpent),
         sessionLimit: limitText(budgetState.limits.sessionTokens),
-        turnSpent: budgetState.turnSpent,
+        turnSpent: fmt(budgetState.turnSpent),
         turnLimit: limitText(budgetState.limits.turnTokens),
-        turnCalls: budgetState.turnCalls,
+        turnCalls: fmt(budgetState.turnCalls),
         toolLimit: limitText(budgetState.limits.turnToolCalls),
         flags: flags.length,
-        receipts,
+        receipts: fmt(receipts),
       }),
     }
   }
@@ -99,12 +102,12 @@ export function createSqueezeCommand(options) {
     const lines = [
       t('command.reportTitle', { target: `turn ${receipt.turn}` }),
       t('command.reportLine', {
-        total: receipt.tokens?.total ?? t('export.unknown'),
+        total: receipt.tokens?.total === null || receipt.tokens?.total === undefined ? t('export.unknown') : fmt(receipt.tokens.total),
         cache: receipt.tokens?.cacheHitRate === null || receipt.tokens?.cacheHitRate === undefined
           ? t('export.unknown')
           : `${Math.round(receipt.tokens.cacheHitRate * 1000) / 10}%`,
-        calls: receipt.tools?.calls ?? 0,
-        failures: receipt.tools?.failures ?? 0,
+        calls: fmt(receipt.tools?.calls ?? 0),
+        failures: fmt(receipt.tools?.failures ?? 0),
         signals: receipt.flags?.length ?? 0,
       }),
       `${t('export.advice')}: ${t(receipt.adviceKey ?? 'advice.none')}`,
@@ -202,6 +205,6 @@ export function createSqueezeCommand(options) {
    * @returns {string}
    */
   function limitText(value) {
-    return value > 0 ? String(value) : t('command.limitNone')
+    return value > 0 ? fmt(value) : t('command.limitNone')
   }
 }

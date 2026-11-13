@@ -127,7 +127,7 @@
 - 真实模型轮次下的端到端回执与 `enforce` 拒绝：临时 profile 无模型凭据；逻辑由合成事件测试覆盖（`test/service.test.js`），事件名与字段来自本文件 §1.1。
 - `/squeeze` 命令在真实命令面板中的渲染：注册形态与官方 `/compact` 一致，命令解析有单测；未在真实 GUI 手工执行。
 - `agent.ctx.tools.guard` 的 agent 级绑定（已改用全局 guard，见 D-6）。
-- 窄屏（≤560px）与 Tab 键盘全流程：未逐项验收。
+- 键盘：Tab 可达会话选择、刷新、导出链接与轮次行，Esc 关闭抽屉；抽屉未做焦点陷阱，未做屏幕阅读器测试。窄屏 520px 无横向页面溢出，表格在自身容器内滚动。
 - Windows 文件权限：只做 best-effort，不宣称 0600 已生效。
 - `turn/end` 重复投递：`ReceiptStore` 幂等由测试覆盖，不依赖宿主行为。
 

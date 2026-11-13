@@ -2,7 +2,7 @@
 
 > 配套文档：[需求单](./requirements.zh-CN.md) · [技术方案](./technical-design.zh-CN.md) · [兼容性勘察](./compat-notes.md)
 
-**一句话**：Host 半已实现并通过 58 项自动化测试与临时 profile 冒烟；Client 面板已在真实浏览器（headless Edge + CDP）完成面板、抽屉与 Esc 的渲染验收，覆盖中文浅色/深色与英文浅色；M4 已预注册并提供可运行 harness，尚未消耗模型额度跑对照。
+**一句话**：Host 半已实现并通过 65 项自动化测试与临时 profile 冒烟；Client 面板已在真实浏览器（headless Edge + CDP）完成面板、抽屉与 Esc 的渲染验收，覆盖中文浅色/深色与英文浅色；M4 已预注册并提供可运行 harness，尚未消耗模型额度跑对照。
 
 ## 里程碑
 
@@ -17,7 +17,7 @@
 ## 验证证据
 
 ```
-npm test            58 pass / 0 fail
+npm test            65 pass / 0 fail
 npm run lint        check-syntax ok（13 个 Host 模块 + 5 个 bench 模块 + client bundle + locale + fixtures）
 npm run demo        2 张回执 → Markdown/JSON/CSV，flags: context_pressure, failure_streak, bloated_result, repeat_calls
 npm run bench       fold p95 0.003 ms（目标 ≤2 ms）；写入 p95 ≈1.0 ms（目标 ≤10 ms）
@@ -53,7 +53,7 @@ npm run bench:plan  9 任务 × 4 组 × 3 次；9 个任务原始状态均验�
 3. 面板是 root 作用域，默认展示最近活动会话，可用下拉框切换；无法自动绑定“当前会话”。
 4. Host 文案跟随 `config.locale`（官方命令本身也是英文单语），面板文案跟随 Client locale。
 5. Windows 权限只做 best-effort，不宣称 0600。
-6. 键盘验收目前覆盖 Esc 关闭抽屉；Tab 全流程与窄屏尚未逐项验收。
+6. 键盘验收：Tab 可达会话选择、刷新、导出链接与轮次行，Esc 关闭抽屉；抽屉没有焦点陷阱（Tab 可移出对话框）。窄屏 520px 无横向页面溢出，表格在容器内滚动。
 
 ## 下一步（建议顺序）
 
