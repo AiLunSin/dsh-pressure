@@ -23,6 +23,22 @@ for (const file of listFiles(path.join(root, 'src'))) {
   }
 }
 
+// Benchmark modules are Node-side tools; importing them must stay side-effect
+// free so a typo fails here instead of during a paid run.
+for (const file of [
+  path.join(root, 'bench', 'tasks.mjs'),
+  path.join(root, 'bench', 'metrics.mjs'),
+  path.join(root, 'bench', 'plan.mjs'),
+  path.join(root, 'bench', 'run.mjs'),
+  path.join(root, 'bench', 'report.mjs'),
+]) {
+  try {
+    await import(pathToFileURL(file).href)
+  } catch (error) {
+    failures.push(`${relative(file)}: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
 for (const file of [
   path.join(root, 'client.js'),
   path.join(root, 'scripts', 'check-syntax.mjs'),
@@ -44,6 +60,7 @@ for (const file of [
   path.join(root, 'package.json'),
   path.join(root, 'locale', 'en.json'),
   path.join(root, 'locale', 'zh.json'),
+  ...listJson(path.join(root, 'test', 'fixtures')),
 ]) {
   try {
     JSON.parse(readFileSync(file, 'utf8'))
@@ -91,6 +108,16 @@ function listFiles(dir) {
   return readdirSync(dir)
     .map((entry) => path.join(dir, entry))
     .filter((file) => statSync(file).isFile() && (file.endsWith('.js') || file.endsWith('.mjs')))
+}
+
+/**
+ * @param {string} dir
+ * @returns {string[]}
+ */
+function listJson(dir) {
+  return readdirSync(dir)
+    .map((entry) => path.join(dir, entry))
+    .filter((file) => statSync(file).isFile() && file.endsWith('.json'))
 }
 
 /**

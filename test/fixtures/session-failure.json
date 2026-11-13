@@ -1,0 +1,147 @@
+[
+  {
+    "type": "turn/start",
+    "data": {
+      "turn": 1
+    },
+    "time": 2000000,
+    "seq": 1
+  },
+  {
+    "type": "step/start",
+    "data": {
+      "turn": 1,
+      "step": 1
+    },
+    "time": 2000010,
+    "seq": 2
+  },
+  {
+    "type": "tool/call",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "callId": "f1",
+      "name": "pwsh",
+      "arguments": "{\"command\":\"npm test\"}"
+    },
+    "time": 2000030,
+    "seq": 3
+  },
+  {
+    "type": "tool/result",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "message": {
+        "role": "tool",
+        "toolCallId": "f1",
+        "isError": true,
+        "content": [
+          {
+            "type": "text",
+            "text": "SECRET_BODY_SHOULD_NOT_PERSIST"
+          }
+        ]
+      },
+      "error": {
+        "name": "CommandError",
+        "code": "EXIT_1"
+      }
+    },
+    "time": 2000035,
+    "seq": 4
+  },
+  {
+    "type": "tool/call",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "callId": "f2",
+      "name": "pwsh",
+      "arguments": "{\"command\":\"npm test\"}"
+    },
+    "time": 2000040,
+    "seq": 5
+  },
+  {
+    "type": "tool/result",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "message": {
+        "role": "tool",
+        "toolCallId": "f2",
+        "isError": true,
+        "content": [
+          {
+            "type": "text",
+            "text": "SECRET_BODY_SHOULD_NOT_PERSIST"
+          }
+        ]
+      },
+      "error": {
+        "name": "CommandError",
+        "code": "EXIT_1"
+      }
+    },
+    "time": 2000045,
+    "seq": 6
+  },
+  {
+    "type": "tool/call",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "callId": "f3",
+      "name": "pwsh",
+      "arguments": "{\"command\":\"npm test\"}"
+    },
+    "time": 2000050,
+    "seq": 7
+  },
+  {
+    "type": "tool/result",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "message": {
+        "role": "tool",
+        "toolCallId": "f3",
+        "isError": true,
+        "content": [
+          {
+            "type": "text",
+            "text": "SECRET_BODY_SHOULD_NOT_PERSIST"
+          }
+        ]
+      },
+      "error": {
+        "name": "CommandError",
+        "code": "EXIT_1"
+      }
+    },
+    "time": 2000055,
+    "seq": 8
+  },
+  {
+    "type": "step/end",
+    "data": {
+      "turn": 1,
+      "step": 1
+    },
+    "time": 2000100,
+    "seq": 9
+  },
+  {
+    "type": "turn/end",
+    "data": {
+      "turn": 1,
+      "reason": {
+        "kind": "completed"
+      }
+    },
+    "time": 2000110,
+    "seq": 10
+  }
+]

@@ -22,9 +22,16 @@ First implementation of the v0.1 design.
 
 ### Verification
 
-- 48 automated tests (fold, flags, budget, receipts, HTTP, service, client bundle, smoke).
+- 58 automated tests (fold, flags, budget, receipts, HTTP, service, client bundle, replay fixtures, benchmark tooling, smoke).
 - Temporary-profile integration: plugin activates, `/health` and `/sessions` respond, client bundle injected, uninstall leaves a 404 route with no residue.
+- Real browser (headless Edge + CDP): panel, receipt drawer, Escape close; Chinese light/dark and English light.
 - Bench: fold p95 0.003 ms, receipt write p95 ≈1 ms on this machine.
+
+### Added after the first pass
+
+- Contract/replay fixtures (`test/fixtures/*.json`) proving counters match logged events and no body text leaks.
+- Pre-registered 9-task, 4-group benchmark plan (`docs/benchmark.md`, `bench/`), with a session-log metrics reader, dry-run-by-default runner, and honest report aggregation.
+- UI fixes from the browser pass: stored-receipt budget reads `sessionLimit`, shorter cache hint, single privacy row, translated pressure source, compact clock in the turn table, default selection prefers a session with receipts, Escape closes the drawer.
 
 ### Known deviations
 

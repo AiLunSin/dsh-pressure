@@ -1,6 +1,7 @@
 node_modules/
 .tmp/
 dist/
+bench/runs/
 *.tgz
 *.log
 .DS_Store

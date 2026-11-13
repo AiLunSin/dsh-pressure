@@ -1,0 +1,172 @@
+[
+  {
+    "type": "turn/start",
+    "data": {
+      "turn": 1
+    },
+    "time": 1000000,
+    "seq": 1
+  },
+  {
+    "type": "step/start",
+    "data": {
+      "turn": 1,
+      "step": 1
+    },
+    "time": 1000010,
+    "seq": 2
+  },
+  {
+    "type": "tool/call",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "callId": "n1",
+      "name": "read",
+      "arguments": "{\"path\":\"src/alpha.js\"}"
+    },
+    "time": 1000020,
+    "seq": 3
+  },
+  {
+    "type": "tool/result",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "message": {
+        "role": "tool",
+        "toolCallId": "n1",
+        "isError": false,
+        "content": [
+          {
+            "type": "text",
+            "text": "const alpha = 1"
+          }
+        ]
+      }
+    },
+    "time": 1000030,
+    "seq": 4
+  },
+  {
+    "type": "tool/call",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "callId": "n2",
+      "name": "grep",
+      "arguments": "{\"pattern\":\"alpha\",\"path\":\"src\"}"
+    },
+    "time": 1000040,
+    "seq": 5
+  },
+  {
+    "type": "tool/result",
+    "data": {
+      "turn": 1,
+      "step": 1,
+      "message": {
+        "role": "tool",
+        "toolCallId": "n2",
+        "isError": false,
+        "content": [
+          {
+            "type": "text",
+            "text": "src/alpha.js:1"
+          }
+        ]
+      }
+    },
+    "time": 1000050,
+    "seq": 6
+  },
+  {
+    "type": "step/end",
+    "data": {
+      "turn": 1,
+      "step": 1
+    },
+    "time": 1000060,
+    "seq": 7
+  },
+  {
+    "type": "turn/end",
+    "data": {
+      "turn": 1,
+      "reason": {
+        "kind": "completed"
+      }
+    },
+    "time": 1000070,
+    "seq": 8
+  },
+  {
+    "type": "turn/start",
+    "data": {
+      "turn": 2
+    },
+    "time": 1000100,
+    "seq": 9
+  },
+  {
+    "type": "step/start",
+    "data": {
+      "turn": 2,
+      "step": 1
+    },
+    "time": 1000110,
+    "seq": 10
+  },
+  {
+    "type": "tool/call",
+    "data": {
+      "turn": 2,
+      "step": 1,
+      "callId": "n3",
+      "name": "edit",
+      "arguments": "{\"path\":\"src/alpha.js\",\"old\":\"1\",\"new\":\"2\"}"
+    },
+    "time": 1000120,
+    "seq": 11
+  },
+  {
+    "type": "tool/result",
+    "data": {
+      "turn": 2,
+      "step": 1,
+      "message": {
+        "role": "tool",
+        "toolCallId": "n3",
+        "isError": false,
+        "content": [
+          {
+            "type": "text",
+            "text": "ok"
+          }
+        ]
+      }
+    },
+    "time": 1000130,
+    "seq": 12
+  },
+  {
+    "type": "step/end",
+    "data": {
+      "turn": 2,
+      "step": 1
+    },
+    "time": 1000140,
+    "seq": 13
+  },
+  {
+    "type": "turn/end",
+    "data": {
+      "turn": 2,
+      "reason": {
+        "kind": "completed"
+      }
+    },
+    "time": 1000150,
+    "seq": 14
+  }
+]

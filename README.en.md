@@ -2,7 +2,7 @@
 
 > A pressure gauge for DeepSeek Harness agent loops: see the waste first, then decide whether to brake.
 
-**Status: v0.1.0. The Host half is implemented and tested; the Web panel is built and injected but has not been visually verified in a real browser.** Not published to npm yet. See [implementation status](./docs/implementation-status.md) (Chinese).
+**Status: v0.1.0. The Host half is implemented and tested; the Web panel has been verified in a real browser (Chinese light/dark, English light).** Not published to npm yet. See [implementation status](./docs/implementation-status.md) (Chinese).
 
 ## What it is
 
@@ -73,10 +73,10 @@ DeepSeek Harness `>=0.2.2-rc.3 <0.3.0`, Node ≥ 22, zero runtime dependencies. 
 - `enforce` is a **tool brake**, not a zero-overspend guarantee: usage is known only after a response, so the final answer is still billed.
 - The panel is root-scoped and cannot bind the current conversation; it defaults to the most recently active session and offers a selector.
 - A plugin loaded mid-turn marks that receipt `partial` and never invents history.
-- Real-browser rendering is not yet manually verified.
+- Real-browser rendering of the panel and receipt drawer is verified; narrow screens and the full Tab keyboard path are not yet itemized.
 
 ## Development
 
-`npm test` (48 tests), `npm run lint` (syntax + zero-dependency/zero-network policy), `npm run demo`, `npm run bench`.
+`npm test` (58 tests), `npm run lint` (syntax + zero-dependency/zero-network policy), `npm run demo`, `npm run bench` (micro), and the pre-registered `npm run bench:plan` / `bench:run` / `bench:report` harness.
 
 MIT. Not an official DeepSeek project; no affiliation or endorsement.

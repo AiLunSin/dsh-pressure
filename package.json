@@ -29,6 +29,7 @@
     "docs",
     "examples",
     "scripts",
+    "bench",
     "README.md",
     "README.en.md",
     "LICENSE",
@@ -40,6 +41,9 @@
     "lint": "node scripts/check-syntax.mjs",
     "demo": "node scripts/demo.mjs",
     "bench": "node scripts/bench.mjs",
+    "bench:plan": "node bench/plan.mjs",
+    "bench:run": "node bench/run.mjs",
+    "bench:report": "node bench/report.mjs",
     "check": "npm run lint && npm test"
   },
   "engines": {

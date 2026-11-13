@@ -2,7 +2,7 @@
 
 > 给 DeepSeek Harness 的 agent 循环装一块压力表：先看见浪费，再决定要不要踩刹车。
 
-**状态：v0.1.0，Host 半已实现并通过测试；Client 面板已构建但未做真实浏览器人工验收。** 尚未发布 npm。详见 [实现状态](./docs/implementation-status.md)。
+**状态：v0.1.0，Host 半已实现并通过测试；Client 面板已在真实浏览器验收（中文浅色/深色、英文浅色）。** 尚未发布 npm。详见 [实现状态](./docs/implementation-status.md)。
 
 | 文档 | 内容 |
 |---|---|
@@ -10,6 +10,7 @@
 | [技术方案](./docs/technical-design.zh-CN.md) | DSH 集成点、投影、预算状态机、回执存储、只读 API、面板、测试与基准 |
 | [兼容性勘察](./docs/compat-notes.md) | DSH `0.2.2-rc.3` 的实际接口、偏差 D-1…D-7、集成验证结果 |
 | [实现状态](./docs/implementation-status.md) | 里程碑完成度、验证证据、已知限制、下一步 |
+| [基准预注册](./docs/benchmark.md) | 9 个合成任务、四组对照、指标、停止条件与诚实报告规则 |
 
 ## 它是什么
 
@@ -131,16 +132,23 @@ logs/actions.jsonl                   # 模式/预算/静音/清理审计
 - **`enforce` 是工具刹车，不是零超支保证**：token 用量在响应后才可知，回执会显示超支量，最终回答仍会计费。
 - 面板是 root 作用域，无法自动知道“当前会话”；默认展示最近活动会话，可在下拉框切换。
 - 插件在会话中途加载时，该轮标 `partial`，token 增量与历史峰值不猜测。
-- 真实浏览器渲染尚未人工验收；headless 浏览器在本机不可用。
+- 真实浏览器渲染已验收面板与回执抽屉；窄屏（≤560px）与 Tab 键盘全流程尚未逐项验收。
 
 ## 开发
 
 ```bash
-npm test        # node:test，48 项
+npm test        # node:test，58 项
 npm run lint    # 语法 + 隐私/零网络/零模型策略检查
 npm run check   # lint + test
 npm run demo    # 离线合成会话 → 回执 → 导出
 npm run bench   # fold / 写入微基准
+
+# M4 基准（预注册；真正执行会消耗模型额度）
+npm run bench:plan                 # 9 任务矩阵与 profile 准备说明
+npm run bench:plan -- --materialize .tmp/bench-plan
+npm run bench:run -- --profiles A=headless,B=pressure-b,C=pressure-c,D=pressure-d \
+  --dsh-home ~/.dsh --out .tmp/bench-runs        # 默认 dry-run
+npm run bench:report -- --results .tmp/bench-runs/results.jsonl
 ```
 
 ## 许可证与声明

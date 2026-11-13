@@ -89,6 +89,11 @@ window.__ModuleLoader__.load({
         endPressure: 'End pressure',
         peakPressure: 'Peak pressure',
         cacheFormula: 'Cache hit = cacheRead / (cacheRead + input + cacheWrite)',
+        cacheHint: 'cacheRead ÷ prompt',
+        privacyLabel: 'Privacy',
+        observedLive: 'sampled live',
+        observedEndOnly: 'end only',
+        observedUnavailable: 'unavailable',
         wallMs: '{value}',
         modeSwitched: 'Mode is read from the live session; use /squeeze mode to change it.',
         unsupported: 'Not available with this installation',
@@ -183,6 +188,11 @@ window.__ModuleLoader__.load({
         endPressure: '结束压力',
         peakPressure: '峰值压力',
         cacheFormula: '缓存命中 = cacheRead / (cacheRead + input + cacheWrite)',
+        cacheHint: 'cacheRead ÷ 提示词',
+        privacyLabel: '隐私',
+        observedLive: '实时采样',
+        observedEndOnly: '仅结束时',
+        observedUnavailable: '不可用',
         wallMs: '{value}',
         modeSwitched: '模式来自活动会话；用 /squeeze mode 修改。',
         unsupported: '当前安装不支持',
@@ -233,8 +243,23 @@ window.__ModuleLoader__.load({
       const value = Date.parse(iso)
       if (!Number.isFinite(value)) return '—'
       return new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
-        month: 'short',
-        day: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+      }).format(new Date(value))
+    }
+
+    function contextSourceLabel(value, t) {
+      if (value === 'live') return t('observedLive')
+      if (value === 'end-only') return t('observedEndOnly')
+      return t('observedUnavailable')
+    }
+
+    function formatClock(iso, locale) {
+      const value = Date.parse(iso)
+      if (!Number.isFinite(value)) return '—'
+      return new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en-US', {
         hour: '2-digit',
         minute: '2-digit',
       }).format(new Date(value))
@@ -357,7 +382,19 @@ window.__ModuleLoader__.load({
       const [reloadKey, setReloadKey] = useState(0)
       const [copied, setCopied] = useState(false)
       const [updatedAt, setUpdatedAt] = useState(null)
+      const drawerRef = useRef(null)
       const locale = localeCode()
+
+      // The receipt drawer is a simple dialog: focus it on open and close on Escape.
+      useEffect(() => {
+        if (detail === null) return undefined
+        drawerRef.current?.focus?.()
+        const onKey = (event) => {
+          if (event.key === 'Escape') setDetail(null)
+        }
+        document.addEventListener('keydown', onKey)
+        return () => document.removeEventListener('keydown', onKey)
+      }, [detail])
 
       useEffect(() => {
         let cancelled = false
@@ -377,7 +414,16 @@ window.__ModuleLoader__.load({
             setHealth(healthData)
             setSessions(sessionData.sessions ?? [])
             setUpdatedAt(Date.now())
-            setSelectedId((previous) => previous ?? latest?.sessionId ?? sessionData.sessions?.[0]?.sessionId ?? null)
+            setSelectedId((previous) => {
+              if (previous !== null) return previous
+              // Prefer a stored session with receipts; a freshly opened live
+              // conversation has nothing to show yet and would render all zeros.
+              const liveHasData = latest?.live === true
+                && ((latest.turn ?? 0) > 0 || latest.lastReceipt !== null || (latest.tools?.calls ?? 0) > 0)
+              return liveHasData
+                ? latest.sessionId
+                : (sessionData.sessions?.[0]?.sessionId ?? latest?.sessionId ?? null)
+            })
             setError(null)
             setReady(true)
           } catch (loadError) {
@@ -441,7 +487,7 @@ window.__ModuleLoader__.load({
       const flags = isLive ? (live.flags ?? []) : (newest?.flags ?? [])
       const mode = isLive ? live.mode : (newest?.budget?.mode ?? health?.config?.mode)
       const budget = isLive ? live.budget : newest?.budget
-      const sessionLimit = budget?.sessionTokens ?? 0
+      const sessionLimit = budget?.sessionTokens ?? budget?.sessionLimit ?? 0
       const sessionSpent = budget?.sessionSpent ?? 0
       const budgetRatio = sessionLimit > 0 ? sessionSpent / sessionLimit : null
       const activeSession = sessions.find((entry) => entry.sessionId === selectedId)
@@ -508,8 +554,8 @@ window.__ModuleLoader__.load({
           : null,
         h('section', { className: 'dshp-kpis', 'aria-label': t('kpis') },
           Kpi(t('tokens'), formatNumber(total, locale), isLive && live.partial ? t('partial') : null),
-          Kpi(t('cacheHit'), formatPercent(rate), t('cacheFormula')),
-          Kpi(t('context'), formatPercent(contextRatio), isLive ? t('live') : (newest?.context?.observedFrom ?? null)),
+          Kpi(t('cacheHit'), formatPercent(rate), t('cacheHint')),
+          Kpi(t('context'), formatPercent(contextRatio), isLive ? t('observedLive') : contextSourceLabel(newest?.context?.observedFrom, t)),
           Kpi(t('toolFailures'), `${failures ?? 0} / ${calls ?? 0}`, t('calls')),
           Kpi(t('wall'), formatDuration(newest?.wallMs), isLive ? `${live.turn} ${t('turnWord')}` : null),
           Kpi(t('mode'), t(mode ?? 'observe'), t('modeHint')),
@@ -583,7 +629,7 @@ window.__ModuleLoader__.load({
                       h('td', null, `${receipt.tools?.calls ?? 0} (${receipt.tools?.repeats ?? 0} ${t('repeats')})`),
                       h('td', null, receipt.tools?.failures ?? 0),
                       h('td', null, (receipt.flags ?? []).map((flag) => flag.code).join(', ') || '—'),
-                      h('td', null, formatTime(receipt.endedAt, locale)),
+                      h('td', null, formatClock(receipt.endedAt, locale)),
                     ))),
                   ),
                 ),
@@ -604,7 +650,7 @@ window.__ModuleLoader__.load({
             dtDd(t('thresholds'), health
               ? `context ${health.config?.thresholds?.contextPressure} · budget ${health.config?.thresholds?.budgetPressure} · fail ${health.config?.thresholds?.failureStreak} · bloat ${health.config?.thresholds?.bloatedResultTokens} · compact ${health.config?.thresholds?.compactionChurn}`
               : '—'),
-            dtDd(t('privacy'), t('privacy')),
+            dtDd(t('privacyLabel'), t('privacy')),
           ),
           updatedAt !== null ? h('p', { className: 'dshp-muted dshp-small' }, t('generated', { time: formatTime(new Date(updatedAt).toISOString(), locale) })) : null,
         ),
@@ -615,6 +661,8 @@ window.__ModuleLoader__.load({
                 role: 'dialog',
                 'aria-modal': 'true',
                 'aria-label': `${t('receipt')} · ${detail.turn}`,
+                ref: drawerRef,
+                tabIndex: -1,
                 onClick: (event) => event.stopPropagation(),
               },
                 h('div', { className: 'dshp-card-head' },
@@ -624,7 +672,7 @@ window.__ModuleLoader__.load({
                 h('dl', { className: 'dshp-dl' },
                   dtDd(t('tokensCol'), formatNumber(tokensTotal(detail.tokens), locale)),
                   dtDd(t('cacheCol'), formatPercent(detail.tokens?.cacheHitRate)),
-                  dtDd(t('context' ) + ' · ' + t('peakPressure'), formatPercent(detail.context?.observedPeak)),
+                  dtDd(t('context' ) + ' · ' + t('peakPressure'), `${formatPercent(detail.context?.observedPeak)} · ${contextSourceLabel(detail.context?.observedFrom, t)}`),
                   dtDd(t('endPressure'), formatPercent(detail.context?.endPressure)),
                   dtDd(t('wall'), formatDuration(detail.wallMs)),
                   dtDd(t('tools'), `${detail.tools?.calls ?? 0} ${t('calls')} · ${detail.tools?.failures ?? 0} ${t('failuresCol')} · ${detail.tools?.repeats ?? 0} ${t('repeats')} · ${detail.context?.compactions ?? 0} ${t('compactions')}`),
@@ -723,6 +771,7 @@ window.__ModuleLoader__.load({
 .dshp-banner-error { color: var(--dsw-alias-state-error-primary); border: 1px solid color-mix(in srgb, var(--dsw-alias-state-error-primary) 30%, transparent); background: color-mix(in srgb, var(--dsw-alias-state-error-primary) 8%, transparent); }
 .dshp-drawer-backdrop { position: fixed; inset: 0; background: color-mix(in srgb, #000 36%, transparent); display: flex; justify-content: flex-end; z-index: 40; }
 .dshp-drawer { width: min(560px, 92vw); height: 100%; overflow: auto; padding: 18px 20px; background: var(--dsw-alias-bg-overlay); border-left: 1px solid var(--dsw-alias-border-l1); display: flex; flex-direction: column; gap: 12px; box-sizing: border-box; }
+.dshp-drawer:focus { outline: none; }
 .dshp-drawer-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .dshp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 @media (max-width: 900px) { .dshp-grid { grid-template-columns: minmax(0, 1fr); } }
