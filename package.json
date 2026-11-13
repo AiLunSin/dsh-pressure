@@ -1,0 +1,58 @@
+{
+  "name": "dsh-pressure",
+  "version": "0.1.0",
+  "description": "Pressure gauge and budget valve for DeepSeek Harness agent loops: see waste, then brake before it becomes spend.",
+  "license": "MIT",
+  "author": "dsh-pressure contributors",
+  "type": "module",
+  "keywords": [
+    "deepseek",
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "tokens",
+    "budget",
+    "observability"
+  ],
+  "exports": {
+    ".": "./src/index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "src",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "docs",
+    "examples",
+    "scripts",
+    "README.md",
+    "README.en.md",
+    "LICENSE",
+    "SECURITY.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "test": "node --test \"test/*.test.js\"",
+    "lint": "node scripts/check-syntax.mjs",
+    "demo": "node scripts/demo.mjs",
+    "bench": "node scripts/bench.mjs",
+    "check": "npm run lint && npm test"
+  },
+  "engines": {
+    "node": ">=22",
+    "dsh": ">=0.2.2-rc.3 <0.3.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  }
+}

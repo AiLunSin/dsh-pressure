@@ -1,0 +1,23 @@
+# dsh-pressure bundle layer.
+# A profile-level patch can override this row by id (for example mode or budget).
+- insert:
+    - id: dsh-pressure
+      name: dsh-pressure
+      config:
+        mode: observe
+        budget:
+          sessionTokens: 0
+          turnTokens: 0
+          turnToolCalls: 0
+        thresholds:
+          contextPressure: 0.8
+          budgetPressure: 0.8
+          failureStreak: 2
+          bloatedResultTokens: 8000
+          compactionChurn: 2
+        coach:
+          maxPerTurn: 3
+        storage:
+          retentionDays: 30
+          maxReceiptsPerSession: 2000
+          maxTotalBytes: 52428800

@@ -1,0 +1,19 @@
+# Example: override the dsh-pressure bundle row in a profile patch.
+# Copy the relevant fields into your profile's cordis.patch.yml.
+- id: dsh-pressure
+  config:
+    mode: coach
+    locale: auto
+    budget:
+      sessionTokens: 200000
+      turnTokens: 0
+      turnToolCalls: 40
+    thresholds:
+      contextPressure: 0.85
+      budgetPressure: 0.8
+      failureStreak: 2
+    coach:
+      maxPerTurn: 2
+    storage:
+      retentionDays: 14
+      maxReceiptsPerSession: 1000

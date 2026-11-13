@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Pressure gauge">
+  <defs>
+    <linearGradient id="dshp-bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f766e"/>
+      <stop offset="1" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#dshp-bg)"/>
+  <path d="M13 43a19 19 0 0 1 38 0" fill="none" stroke="#ffffff" stroke-opacity=".92" stroke-width="4" stroke-linecap="round"/>
+  <path d="M13 43h5M46 43h5M17.6 30.6l3.4 2.6M46.4 30.6 43 33.2M32 24v4.4" fill="none" stroke="#ffffff" stroke-opacity=".62" stroke-width="2" stroke-linecap="round"/>
+  <path d="M32 40.5 42.2 29" fill="none" stroke="#ffffff" stroke-width="3.4" stroke-linecap="round"/>
+  <circle cx="32" cy="40.5" r="4.2" fill="#ffffff"/>
+  <circle cx="32" cy="40.5" r="1.7" fill="#0f766e"/>
+</svg>

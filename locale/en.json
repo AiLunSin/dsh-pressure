@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Pressure",
+    "description": "A gauge and budget valve for agent loops: per-turn token, context, tool, and time readings, evidenced waste signals, an opt-in tool brake, and a body-free receipt you can export.",
+    "detail": "docs/DETAIL.md"
+  }
+}

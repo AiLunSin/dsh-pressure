@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "压力表",
+    "description": "给 agent 循环装一块压力表与预算阀门：每轮 token、上下文、工具与时间读数，有证据的浪费信号，可选的工具刹车，以及可导出的无正文回执。",
+    "detail": "docs/DETAIL.md"
+  }
+}
