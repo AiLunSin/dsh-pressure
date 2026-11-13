@@ -136,10 +136,13 @@ export const TASKS = [
     id: 'investigate-perf',
     category: 'investigation',
     title: 'Replace an O(n^2) duplicate scan',
-    prompt: prompt('Replace an O(n^2) duplicate scan', '`src/process.js` removes duplicates with a nested scan and times out on 50k items. Make it linear while preserving order and the returned shape.'),
+    prompt: prompt('Replace an O(n^2) duplicate scan', '`src/process.js` removes duplicates with a nested scan and is far too slow on 50k items. Make it linear while preserving order and the returned shape.'),
     setup(dir) {
       write(dir, 'src/process.js', 'export function unique(values) {\n  const output = []\n  for (const value of values) {\n    if (!output.includes(value)) output.push(value)\n  }\n  return output\n}\n')
-      write(dir, 'check.mjs', "import { unique } from './src/process.js'\nimport assert from 'node:assert/strict'\nconst values = Array.from({ length: 100000 }, (_, index) => index % 10000)\nconst started = performance.now()\nconst result = unique(values)\nconst elapsed = performance.now() - started\nassert.equal(result.length, 10000)\nassert.deepEqual(result.slice(0, 3), [0, 1, 2])\nassert.ok(elapsed < 300, `too slow: ${elapsed}ms`)\nconsole.log('ok')\n")
+      // 50k items with 25k distinct values: the nested scan needs ~6e8 comparisons,
+      // so even a fast host stays well above the 100 ms budget, while a Set-based
+      // linear version finishes in a few milliseconds.
+      write(dir, 'check.mjs', "import { unique } from './src/process.js'\nimport assert from 'node:assert/strict'\nconst values = Array.from({ length: 50000 }, (_, index) => index % 25000)\nconst started = performance.now()\nconst result = unique(values)\nconst elapsed = performance.now() - started\nassert.equal(result.length, 25000)\nassert.deepEqual(result.slice(0, 3), [0, 1, 2])\nassert.ok(elapsed < 100, `too slow: ${elapsed}ms`)\nconsole.log('ok')\n")
     },
   },
 ]

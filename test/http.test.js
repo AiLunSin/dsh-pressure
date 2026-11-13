@@ -27,6 +27,20 @@ function fakeResponse() {
   }
 }
 
+/**
+ * Poll until the asynchronous receipt write lands instead of guessing a delay:
+ * Windows runners can take well over 20 ms to flush the append.
+ * @param {() => boolean} predicate
+ * @param {number} [timeoutMs]
+ */
+async function waitFor(predicate, timeoutMs = 5000) {
+  const started = Date.now()
+  while (!predicate()) {
+    if (Date.now() - started > timeoutMs) throw new Error('timed out waiting for the receipt write')
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
+}
+
 async function setup() {
   const dir = await mkdtemp(path.join(os.tmpdir(), 'pressure-http-'))
   const store = new ReceiptStore({
@@ -69,7 +83,7 @@ async function setup() {
   service.bindAgent(agent)
   service.onSessionEvent(session, { type: 'turn/start', data: { turn: 1 }, time: 1_700_000_000_000, seq: 1 })
   service.onSessionEvent(session, { type: 'turn/end', data: { turn: 1, reason: { kind: 'completed' } }, time: 1_700_000_001_000, seq: 2 })
-  await new Promise((resolve) => setTimeout(resolve, 20))
+  await waitFor(() => store.receiptCount(sessionId) === 1)
   const handler = createNodeHandler({ service, store, config, version: '0.1.0', dataDir: dir })
   return { dir, store, service, handler, sessionId }
 }

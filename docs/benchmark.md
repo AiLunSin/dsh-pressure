@@ -23,7 +23,7 @@
 | `feature-retry` | 多文件功能 | 实现 `retry(fn,{attempts})` | 成功与最终失败 |
 | `investigate-constant` | 调查型 | 10 个模块中 1 个常量不一致 | 全部等于 config |
 | `investigate-duplicate` | 调查型 | 12 份重复 `normalize()` 收敛到共享实现 | 共享模块 + 全部导出 |
-| `investigate-perf` | 调查型 | 把 O(n²) 去重改成线性 | 50k 输入 < 300 ms |
+| `investigate-perf` | 调查型 | 把 O(n²) 去重改成线性 | 50k 输入（25k 去重）< 100 ms |
 
 每个任务在**未修改**时必须失败；`test/bench.test.js` 会为 9 个任务逐一断言这一点，防止“自带答案”。
 
